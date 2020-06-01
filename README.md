@@ -36,6 +36,7 @@ itext 5.x 获取文本的代码`textRenderInfo.getText();`这个只能获取到�
         }
 
         List<WordVO> filterList = new ArrayList<>();
+        //筛选出每页符合当前关键词首个字符的元素
         for (int i = 0; i < allWordsList.size(); i++) {
             filterList.addAll(allWordsList.get(i).stream().filter(word -> word.getWord().equals(keys[0])).collect(Collectors.toList()));
         }
@@ -68,4 +69,9 @@ itext 5.x 获取文本的代码`textRenderInfo.getText();`这个只能获取到�
         //filterList.forEach(wordVO -> System.out.println(wordVO));
         return keyVOS;
 ```
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/2020060116253592.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4MDgyMzA0,size_16,color_FFFFFF,t_70)
+
+
+[源码地址：https://github.com/niezhiliang/pdf-keyword-port](https://github.com/niezhiliang/pdf-keyword-port)
 

@@ -48,6 +48,7 @@ public class PdfHelper {
         }
 
         List<WordVO> filterList = new ArrayList<>();
+        //筛选出每页符合当前关键词首个字符的元素
         for (int i = 0; i < allWordsList.size(); i++) {
             filterList.addAll(allWordsList.get(i).stream().filter(word -> word.getWord().equals(keys[0])).collect(Collectors.toList()));
         }
