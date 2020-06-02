@@ -35,6 +35,7 @@ public class CustomerRenderListener implements RenderListener {
     public void renderText(TextRenderInfo textRenderInfo) {
         int index = wordVOS.size();
         String text = textRenderInfo.getText();
+        System.out.println(text);
         //关键字的起始坐标
         Vector startPoint = textRenderInfo.getBaseline().getStartPoint();
         WordVO wordVO = new WordVO();
