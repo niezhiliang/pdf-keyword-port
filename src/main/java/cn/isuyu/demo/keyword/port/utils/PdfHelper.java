@@ -70,8 +70,13 @@ public class PdfHelper {
         //筛选出每页符合当前关键词首个字符的元素
         for (int i = 0; i < allWordsList.size(); i++) {
             //本来这里判读使用equase方法的，但是由于可能读出多个字符其中可能包含了关键字，所以就用了contains
-            filterList.addAll(allWordsList.get(i).stream().filter(word -> word.getWord().contains(keys[0]))
-                    .collect(Collectors.toList()));
+            //如果有空格 直接复制内容去匹配，匹配会有问题
+            filterList.addAll(allWordsList.get(i).stream().filter(word -> word.getWord().replaceAll("\\s*", "")
+                    .contains(keys[0].replaceAll("\\s*", ""))).collect(Collectors.toList()));
+
+        }
+        for (int i = 0; i < allWordsList.size(); i++) {
+            //从文档里面复制带有空格的直接来匹配 匹配不到，所以我们把空格去掉
         }
 
         //获取符合关键字的结果
