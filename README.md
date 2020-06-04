@@ -1,4 +1,5 @@
-### Pdf定位关键词坐标
+
+# Pdf定位关键词坐标
 
 之前就做过关键词获取坐标的demo,但是有时候会发现有些关键字，文档上面明明存在的，但是通过demo中的代码来获取，
 就是获取不大，后面查资料，发现大家都有这个情况，后面在一篇博客中看到个比较好的解决方案，因为
@@ -73,14 +74,13 @@ itext 5.x 获取文本的代码`textRenderInfo.getText();`这个只能获取到�
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/2020060116253592.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM4MDgyMzA0,size_16,color_FFFFFF,t_70)
 
 
-
 ### 2020-06-02 修改
 
 我将该代码接入到自己项目中的时候，发现有些pdf还是读不到关键字，后面我将每页读到的字符打印到控制台，发现`textRenderInfo.getText();`
-读到的是多个字符，所以就对代码进行了一定的改造。改造如下：
+读到的是多个字符，如果是多个字符我们将字符去掉空格，然后分割成单个字符，添加到集合中，所以就对代码进行了一定的改造。改造如下：
 
 ```java
-    /**
+ /**
      * 获取符合关键字首字符的坐标
      * @param key
      * @param path
@@ -96,53 +96,47 @@ itext 5.x 获取文本的代码`textRenderInfo.getText();`这个只能获取到�
 
         for (int i = 1; i <= pdfReader.getNumberOfPages(); i++) {
             //获取每一页的字符集
-            CustomRenderListener customerRenderListener = new CustomRenderListener(i);
+            CustomerRenderListener customerRenderListener = new CustomerRenderListener(i);
             pdfReaderContentParser.processContent(i,customerRenderListener);
             //每一页的字符以及字符坐标
             List<WordVO> wordVOS = customerRenderListener.getWordVOS();
             allWordsList.add(wordVOS);
         }
 
-        //将字符串分割为单个字符数组
-        String [] keys = new String[]{key};
-        //直接将关键词去匹配
-        List<KeyVO> keyVOS = getPort(keys,allWordsList);
-
-        //没匹配到分割字符去匹配
-        if(keyVOS.size() < 1) {
-            keyVOS = getPort(key.split(""),allWordsList);
-        }
+        //把所有空格都去掉再分割成字符去匹配
+        List<KeyVO> keyVOS = getPort(key.replaceAll("\\s*", "").split(""),allWordsList);
         return keyVOS;
+
     }
 
     /**
-     * 因为有时候文档读到的不是单个字符 可能会读到多个字符
-     * 所以将这一块剥离出来，如果不将关键词分割成单个字符
-     * 就能找到关键字位置，就直接返回，如果找不到 就分割成单个
-     * 字符来找
      * @param keys
      * @param allWordsList
      * @return
      */
-    private static List<KeyVO> getPort(String [] keys,List<List<WordVO>> allWordsList) {
+    private static List getPort(String [] keys,List<List<WordVO>> allWordsList) {
         List<WordVO> filterList = new ArrayList<>();
         //筛选出每页符合当前关键词首个字符的元素
+        //筛选出每页符合当前关键词首个字符的元素
         for (int i = 0; i < allWordsList.size(); i++) {
-            filterList.addAll(allWordsList.get(i).stream().filter(word -> word.getWord().contains(keys[0])).collect(Collectors.toList()));
+            //这里直接匹配出文档中所有等于字符首字母的元素
+            filterList.addAll(allWordsList.get(i).stream().filter(word -> word.getWord().equals(keys[0])).collect(Collectors.toList()));
         }
 
         //获取符合关键字的结果
         List<KeyVO> keyVOS = new ArrayList<>();
 
         for (WordVO wordVO : filterList) {
+            //如果关键字长度只有1，表示未分割就去匹配，如果匹配到了直接返回结果就行
             if  (keys.length == 1) {
                 KeyVO keyVO = new KeyVO();
                 keyVO.setPageNo(wordVO.getPageNo());
                 keyVO.setX(wordVO.getX());
                 keyVO.setY(wordVO.getY());
                 keyVOS.add(keyVO);
+                System.out.println(wordVO);
             } else {
-                for (int i = 1; i< keys.length; i++) {
+                for (int i = 1; i < keys.length; i++) {
                     List<WordVO> pageWordVO =  allWordsList.get(wordVO.getPageNo()-1);
                     //如果第二个字符不是我们想要的 直接跳过
                     if (!keys[i].equals(pageWordVO.get(wordVO.getIndex()+i).getWord())) {
@@ -177,4 +171,8 @@ itext 5.x 获取文本的代码`textRenderInfo.getText();`这个只能获取到�
 
 
 [源码地址：https://github.com/niezhiliang/pdf-keyword-port](https://github.com/niezhiliang/pdf-keyword-port)
+
+
+[参考博客：https://blog.csdn.net/guo123k/article/details/76417702](https://blog.csdn.net/guo123k/article/details/76417702)
+
 
