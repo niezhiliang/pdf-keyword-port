@@ -30,6 +30,7 @@ public class PdfHelper {
     public static List<KeyVO> getWordPort(String key, String path) throws IOException {
         //用来获取pdf中每一页的字符
         List<List<WordVO>> allWordsList = Collections.synchronizedList(new ArrayList());
+
         PdfReader pdfReader = new PdfReader(path);
         PdfReaderContentParser pdfReaderContentParser = new PdfReaderContentParser(pdfReader);
 
@@ -41,17 +42,9 @@ public class PdfHelper {
             List<WordVO> wordVOS = customerRenderListener.getWordVOS();
             allWordsList.add(wordVOS);
         }
-        //将字符串分割为单个字符数组
-        String [] keys = new String[]{key};
-        //直接将关键词去匹配
 
-        //获取符合关键字的结果
-        List<KeyVO> keyVOS = getPort(keys,allWordsList);
-
-        //没匹配到分割字符去匹配
-        if(keyVOS.size() < 1) {
-            keyVOS = getPort(key.split(""),allWordsList);
-        }
+        //把所有空格都去掉再分割成字符去匹配
+        List<KeyVO> keyVOS = getPort(key.replaceAll("\\s*", "").split(""),allWordsList);
         return keyVOS;
 
     }
@@ -68,15 +61,10 @@ public class PdfHelper {
     private static List getPort(String [] keys,List<List<WordVO>> allWordsList) {
         List<WordVO> filterList = new ArrayList<>();
         //筛选出每页符合当前关键词首个字符的元素
+        //筛选出每页符合当前关键词首个字符的元素
         for (int i = 0; i < allWordsList.size(); i++) {
-            //本来这里判读使用equase方法的，但是由于可能读出多个字符其中可能包含了关键字，所以就用了contains
-            //如果有空格 直接复制内容去匹配，匹配会有问题
-            filterList.addAll(allWordsList.get(i).stream().filter(word -> word.getWord().replaceAll("\\s*", "")
-                    .contains(keys[0].replaceAll("\\s*", ""))).collect(Collectors.toList()));
-
-        }
-        for (int i = 0; i < allWordsList.size(); i++) {
-            //从文档里面复制带有空格的直接来匹配 匹配不到，所以我们把空格去掉
+            //这里直接匹配出文档中所有等于字符首字母的元素
+            filterList.addAll(allWordsList.get(i).stream().filter(word -> word.getWord().equals(keys[0])).collect(Collectors.toList()));
         }
 
         //获取符合关键字的结果
@@ -92,7 +80,7 @@ public class PdfHelper {
                 keyVOS.add(keyVO);
                 System.out.println(wordVO);
             } else {
-                for (int i = 1; i< keys.length; i++) {
+                for (int i = 1; i < keys.length; i++) {
                     List<WordVO> pageWordVO =  allWordsList.get(wordVO.getPageNo()-1);
                     //如果第二个字符不是我们想要的 直接跳过
                     if (!keys[i].equals(pageWordVO.get(wordVO.getIndex()+i).getWord())) {
